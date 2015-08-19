@@ -11,14 +11,6 @@ var chess = function( currentPos, color ){
 					blackPawn: 7, blackkNight: 8, blackBishop: 9, blackRook: 10, blackQueen: 11, blackKing: 12 },
 		colors = { white: 0, black: 1, both: 2 },
 		defaultPosition = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-		/*
-		FEN: 6 sections, min of 4
-		1; set up of board, back
-		uppercase is white
-		side
-		then castle - doesnt matter for this
-		en passent -doesnt matter
-		 */
 		files = { fileA: 0, fileB: 1, fileC: 2, fileD: 3, fileE: 4, fileF: 5, fileG: 6, fileH: 7, noFile: 8 },
 		ranks = { rank1: 0, rank2: 1, rank3: 2, rank4: 3, rank5: 4, rank6: 5, rank7: 6, rank8: 7, noRank: 8 },
 		keySquares = { a1: 21, b1: 22, c1: 23, d1: 24, e1: 25, f1: 26, g1: 27, h1: 28,
@@ -26,6 +18,7 @@ var chess = function( currentPos, color ){
 					noSquare: 99, offBoard: 100},
 		maxDepth = 64, // max search depth
 		maxMoves = 256, // max number of moves
+		pieceChars = '.PNBRQKpnbrqk', // letters to represent the characters
 		sideKey;
 
 	// set up arrays
@@ -57,7 +50,7 @@ var chess = function( currentPos, color ){
 	// piece on side
 	//
 	var fileRankSquare = function( file, rank ) {
-		return( (21 + file ) + (rank * 10) );
+		return( ( 21 + file ) + ( rank * 10 ) );
 	};
 
 	// generate random numbers
@@ -110,7 +103,7 @@ var chess = function( currentPos, color ){
 			for( boardFile = files.fileA; boardFile <= files.fileH; boardFile++ ) {
 				boardSquare = fileRankSquare( boardFile, boardRank );
 				boardPiece = gameBoard.pieces[boardSquare];
-				line += ' ' + boardPiece + ' ';
+				line += ' ' + pieceChars[boardPiece] + ' ';
 			}
 			console.log( line );
 		}
@@ -201,49 +194,68 @@ var chess = function( currentPos, color ){
 		while ( rank >= ranks.rank1 && fenCount < currentPos.length ) {
 			count = 1;
 
-			if ( currentPos[fenCount] === 'p') {
-				piece = chessPieces.blackPawn;
-			}
-			else if ( currentPos[fenCount] === 'r'){
-				piece = chessPieces.blackRook;
-			}
-			else if ( currentPos[fenCount] === 'n'){
-				piece = chessPieces.blackkNight;
-			}
-			else if ( currentPos[fenCount] === 'b'){
-				piece = chessPieces.blackBishop;
-			}
-			else if ( currentPos[fenCount] === 'k'){
-				piece = chessPieces.blackKing;
-			}
-			else if ( currentPos[fenCount] === 'q'){
-				piece = chessPieces.blackQueen;
-			}
-			else if ( currentPos[fenCount] === 'P'){
-				piece = chessPieces.whitePawn;
-			}
-			else if ( currentPos[fenCount] === 'R'){
-				piece = chessPieces.whiteRook;
-			}
-			else if ( currentPos[fenCount] === 'N'){
-				piece = chessPieces.whitekNight;
-			}
-			else if ( currentPos[fenCount] === 'B'){
-				piece = chessPieces.whiteBishop;
-			}
-			else if ( currentPos[fenCount] === 'K'){
-				piece = chessPieces.whiteKing;
-			}
-			else if ( currentPos[fenCount] === 'Q'){
-				piece = chessPieces.whiteQueen;
-			}
-			else if( currentPos[fenCount] === '/' || currentPos[fenCount] === ' ') {
-				file = files.fileA;
-				rank--;
-				fenCount++;
-			}
-			else {
-				piece = parseInt( currentPos[fenCount] );
+			console.log('fenCount: ' + fenCount );
+			console.log('count: ' + count );
+
+			switch( currentPos[fenCount] ) {
+				case 'p':
+					piece = chessPieces.blackPawn;
+					break
+				case 'r':
+					piece = chessPieces.blackRook;
+					break;
+				case 'n':
+					piece = chessPieces.blackkNight;
+					break;
+				case 'b':
+					piece = chessPieces.blackBishop;
+					break;
+				case 'k':
+					piece = chessPieces.blackKing;
+					break;
+				case 'q':
+					piece = chessPieces.blackQueen;
+					break;
+				case 'P':
+					piece = chessPieces.whitePawn;
+					break;
+				case 'R':
+					piece = chessPieces.whiteRook;
+					break;
+				case 'N':
+					piece = chessPieces.whitekNight;
+					break;
+				case 'B':
+					piece = chessPieces.whiteBishop;
+					break;
+				case 'K':
+					piece = chessPieces.whiteKing;
+					break;
+				case 'Q':
+					piece = chessPieces.whiteQueen;
+					break;
+
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+					piece = chessPieces.empty;
+					count = parseInt( currentPos[fenCount] );
+					break;
+
+				case '/':
+				case ' ':
+					rank--;
+					file = files.fileA;
+					fenCount++;
+					continue;
+				default:
+					console.error( 'FEN ERROR' );
+					return;
 			}
 			console.log( piece );
 
@@ -300,6 +312,7 @@ var chess = function( currentPos, color ){
 	init120squaresTo64();
 	parsePosFEN( currentPos );
 	parseColor( color );
+	printBoard();
 };
 
 var chessGame = new chess();
