@@ -18,7 +18,6 @@ var chess = function( currentPos, color ){
 					noSquare: 99, offBoard: 100},
 		maxDepth = 64, // max search depth
 		maxMoves = 256, // max number of moves
-		pieceChars = '.PNBRQKpnbrqk', // letters to represent the characters
 		sideKey;
 
 	// set up arrays
@@ -94,12 +93,14 @@ var chess = function( currentPos, color ){
 		var boardFile,
 			boardPiece,
 			boardRank,
-			boardSquare;
+			boardSquare,
+			fileChars = 'abcdefgh',
+			pieceChars = '.PNBRQKpnbrqk';// letters to represent the characters;
 
 		console.log('Game Board: ' );
 
 		for( boardRank = ranks.rank8; boardRank >= ranks.rank1; boardRank-- ){
-			var line = boardRank;
+			var line = boardRank + ' ';
 			for( boardFile = files.fileA; boardFile <= files.fileH; boardFile++ ) {
 				boardSquare = fileRankSquare( boardFile, boardRank );
 				boardPiece = gameBoard.pieces[boardSquare];
@@ -109,8 +110,9 @@ var chess = function( currentPos, color ){
 		}
 		var newLine = ' ';
 		for( boardFile = files.fileA; boardFile <= files.fileH; boardFile++ ) {
-			newLine += ' ' + boardFile + ' ';
+			newLine += ' ' + fileChars[boardFile] + ' ';
 		}
+		console.log( newLine );
 	};
 
 	var generatePositionKey = function() {
@@ -194,9 +196,6 @@ var chess = function( currentPos, color ){
 		while ( rank >= ranks.rank1 && fenCount < currentPos.length ) {
 			count = 1;
 
-			console.log('fenCount: ' + fenCount );
-			console.log('count: ' + count );
-
 			switch( currentPos[fenCount] ) {
 				case 'p':
 					piece = chessPieces.blackPawn;
@@ -257,7 +256,6 @@ var chess = function( currentPos, color ){
 					console.error( 'FEN ERROR' );
 					return;
 			}
-			console.log( piece );
 
 			for ( var i = 0; i < count; i++ ) {
 				square120 = fileRankSquare( file, rank );
@@ -315,4 +313,4 @@ var chess = function( currentPos, color ){
 	printBoard();
 };
 
-var chessGame = new chess();
+var chessGame = new chess( 'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1', 'black');
