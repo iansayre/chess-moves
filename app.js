@@ -91,12 +91,29 @@ var chess = function( currentPos, color ){
 			}
 		}
 	};
-
-
 		// set up the game board
 
 	var pieceIndex = function( piece, pieceNum ) {
 		return ( piece * 10 + pieceNum );
+	};
+
+	var printBoard = function() {
+		var boardFile,
+			boardPiece,
+			boardRank,
+			boardSquare;
+
+		console.log('Game Board: ' );
+
+		for( boardRank = ranks.rank8; boardRank >= ranks.rank1; boardRank-- ){
+			var line = boardRank;
+			for( boardFile = files.fileA; boardFile <= files.fileH; boardFile++ ) {
+				boardSquare = fileRankSquare( boardFile, boardRank );
+				boardPiece = gameBoard.pieces[boardSquare];
+				line += ' ' + boardPiece + ' ';
+			}
+			console.log( line );
+		}
 	};
 
 	var generatePositionKey = function() {
