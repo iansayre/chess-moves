@@ -114,6 +114,10 @@ var chess = function( currentPos, color ){
 			}
 			console.log( line );
 		}
+		var newLine = ' ';
+		for( boardFile = files.fileA; boardFile <= files.fileH; boardFile++ ) {
+			newLine += ' ' + boardFile + ' ';
+		}
 	};
 
 	var generatePositionKey = function() {
