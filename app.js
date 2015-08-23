@@ -19,6 +19,8 @@ var chess = function( currentPos, color ){
 		maxDepth = 64, // max search depth
 		maxMoves = 256, // max number of moves
 		pieceChars = '.PNBRQKpnbrqk', //characters to represent the pieces
+		pieceColors = [ colors.both, colors.white, colors.white, colors.white, colors.white, colors.white, colors.white,
+						colors.black, colors.black, colors.black, colors.black, colors.black, colors.black ],
 		rankChars = '12345678', //characters to represent the ranks
 		ranks = { rank1: 0, rank2: 1, rank3: 2, rank4: 3, rank5: 4, rank6: 5, rank7: 6, rank8: 7, noRank: 8 },
 		sideKey;
@@ -45,6 +47,21 @@ var chess = function( currentPos, color ){
 		// fiftymove: 0,
 		// castling: 0
 	};
+
+	// set up piece boolean arrays
+	var piecePawn = [ false, true, false, false, false, false, false, true, false, false, false, false, false ],
+		piecekNight = [ false, false, true, false, false, false, false, false, true, false, false, false, false ],
+		pieceKing = [ false, false, false, false, false, false, true, false, false, false, false, false, true ],
+		pieceRookandQueen = [ false, false, false, false, true, true, false, false, false, false, true, true, false ],
+		pieceBishandQueen = [ false, false, false, true, false, true, false, false, false, true, false, true, false ],
+		pieceSlides = [ false, false, false, true, true, true, false, false, false, true, true, true, false ];
+
+	// set up the direction arrays for the pieces that move all fancy like
+	var knightDir = [ -21, -19, -12, -8, 8, 12, 19, 21 ],
+		rookDir = [ -1, -10, 1, 10 ],
+		bishDir = [ -11, -9, 9, 11 ],
+		kingDir = [ -11, -10, -9, -1, 1, 9, 10, 11 ];
+
 
 	// generate numbers based on file and rank
 	// piece on square
@@ -79,12 +96,12 @@ var chess = function( currentPos, color ){
 			rank = ranks.rank1,
 			square = keySquares.a1;
 
-		for ( var i = 0; i < boardSquares; i++ ){
+		for( var i = 0; i < boardSquares; i++ ){
 			fileBoard[i] = keySquares.offBoard;
 			rankBoard[i] = keySquares.offBoard;
 		}
 
-		for ( rank = ranks.rank1; rank <= ranks.rank8; rank++ ){
+		for( rank = ranks.rank1; rank <= ranks.rank8; rank++ ){
 			for( file = files.fileA; file <= files.fileH; file++ ){
 				square = fileRankSquare( file, rank );
 				fileBoard[square] = file;
@@ -94,7 +111,7 @@ var chess = function( currentPos, color ){
 	};
 
 	var initPieceKeys = function(){
-		for ( var i = 0; i < pieceKeys.length; i++ ) {
+		for( var i = 0; i < pieceKeys.length; i++ ) {
 			pieceKeys[i] = randoNums();
 		}
 
@@ -107,12 +124,12 @@ var chess = function( currentPos, color ){
 			square = keySquares.a1,
 			sq64 = 0;
 
-		for ( var i = 0; i < boardSquares; i++ ) {
+		for( var i = 0; i < boardSquares; i++ ) {
 			// something off the 64 square board
 			oneTwentyTo64[i] = 65;
 		}
 
-		for ( var j = 0; j < 64; j++ ) {
+		for( var j = 0; j < 64; j++ ) {
 			sixtyFourTo120[j] = 120;
 		}
 
@@ -127,6 +144,9 @@ var chess = function( currentPos, color ){
 	};
 
 	var parseColor = function( color ) {
+		if( !color ) {
+			gameBoard.side = colors.white;
+		}
 		gameBoard.side = color === 'white' ? colors.white : colors.black;
 		console.log('COLOR: ' + gameBoard.side );
 	};
@@ -143,18 +163,18 @@ var chess = function( currentPos, color ){
 
 		console.log( currentPos );
 
-		if ( !currentPos ) {
+		if( !currentPos ) {
 			currentPos = defaultPosition;
 			console.log( 'default currentPos: ' + currentPos );
 		}
 
-		while ( rank >= ranks.rank1 && fenCount < currentPos.length ) {
+		while( rank >= ranks.rank1 && fenCount < currentPos.length ) {
 			count = 1;
 
 			switch( currentPos[fenCount] ) {
 				case 'p':
 					piece = chessPieces.blackPawn;
-					break
+					break;
 				case 'r':
 					piece = chessPieces.blackRook;
 					break;
@@ -221,10 +241,11 @@ var chess = function( currentPos, color ){
 		}
 
 		updateMaterialList();
+		printSquareAttack();
 	};
 
 	var pieceIndex = function( piece, pieceNum ) {
-		return ( piece * 10 + pieceNum );
+		return( piece * 10 + pieceNum );
 	};
 
 	var printBoard = function() {
@@ -256,8 +277,8 @@ var chess = function( currentPos, color ){
 	var printPieces =  function() {
 		var piece,
 			pieceNum;
-		for ( piece = chessPieces.whitePawn; piece <= chessPieces.blackKing; piece++ ) {
-			for ( pieceNum = 0; pieceNum < gameBoard.pieceNum[piece]; pieceNum++ ) {
+		for( piece = chessPieces.whitePawn; piece <= chessPieces.blackKing; piece++ ) {
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[piece]; pieceNum++ ) {
 				console.log( pieceChars[piece] + ' is on ' + printSquare( gameBoard.pieceList[pieceIndex( piece, pieceNum )] ) )
 			}
 		}
@@ -269,7 +290,7 @@ var chess = function( currentPos, color ){
 
 	// generate random numbers
 	var randoNums = function() {
-		return ( Math.floor( ( Math.random() * 255 ) + 1 ) << 23 ) | ( Math.floor( ( Math.random() * 255 ) + 1 ) << 16 ) | ( Math.floor( ( Math.random() * 255 ) + 1 ) << 8 ) | Math.floor( ( Math.random() * 255 ) + 1 );
+		return( Math.floor( ( Math.random() * 255 ) + 1 ) << 23 ) | ( Math.floor( ( Math.random() * 255 ) + 1 ) << 16 ) | ( Math.floor( ( Math.random() * 255 ) + 1 ) << 8 ) | Math.floor( ( Math.random() * 255 ) + 1 );
 	};
 
 	var resetBoard = function() {
@@ -291,6 +312,105 @@ var chess = function( currentPos, color ){
 		gameBoard.hisPly = 0;
 		gameBoard.moveListStart[gameBoard.ply] = 0;
 		gameBoard.posKey = 0;
+	};
+
+	var printSquareAttack = function() {
+		var file,
+			piece,
+			rank,
+			square;
+
+		for ( rank = ranks.rank8; rank >= ranks.rank1; rank-- ) {
+			var line = rank + 1 + ' ';
+			for( file = files.fileA; file <= files.fileH; file++ ) {
+				square = fileRankSquare( file, rank );
+				if( squareAttacked( square, gameBoard.side ) ) {
+					piece = 'x';
+				}
+				else {
+					piece = '-';
+					line += ' ' + piece + ' ';
+				}
+			}
+			console.log( line );
+		}
+	};
+
+	// @PARAMS square and attacking side
+	// @RETURN Bool
+	var squareAttacked =  function( square, side ) {
+		var dir,
+			i,
+			piece,
+			tSQ;
+
+		// check for pawn movement
+		if( side === colors.white ) {
+			if( gameBoard.pieces[square - 11] === chessPieces.whitePawn || gameBoard.pieces[square - 9] === chessPieces.whitePawn ) {
+				return true;
+			}
+		}
+		else {
+			if( gameBoard.pieces[square + 11] === chessPieces.blackPawn || gameBoard.pieces[square + 9] === chessPieces.blackPawn ) {
+				return true;
+			}
+		}
+
+		// check for knight movement
+		for( i = 0; i < knightDir.length; i++ ) {
+			piece = gameBoard.pieces[ square + knightDir[i] ];
+
+			if( piece != keySquares.offBoard && pieceColors[piece] === side && piecekNight[piece] ) {
+				return true;
+			}
+		}
+
+		// check for king movement
+		for( i = 0; i < kingDir.length; i++ ) {
+			piece = gameBoard.pieces[ square + kingDir[i] ];
+
+			if( piece != keySquares.offBoard && pieceColors[piece] === side && pieceKing[piece] ) {
+				return true;
+			}
+		}
+
+		// check for rook movement
+		for( i = 0; i < rookDir.length; i++ ) {
+			dir = rookDir[i];
+			tSQ = square + dir;
+			piece = gameBoard.pieces[tSQ];
+
+			while( piece != keySquares.offBoard ) {
+				if( piece != chessPieces.empty ) {
+					if( pieceRookandQueen && pieceColors === side ) {
+						return true;
+					}
+					break;
+				}
+				tSQ += dir;
+				piece = gameBoard.pieces[tSQ];
+			}
+		}
+
+		// check for bishop movement
+		for( i = 0; i < bishDir.length; i++ ) {
+			dir = bishDir[i];
+			tSQ = square + dir;
+			piece = gameBoard.pieces[tSQ];
+
+			while( piece != keySquares.offBoard ) {
+				if( piece != chessPieces.empty ) {
+					if( pieceBishandQueen && pieceColors === side ) {
+						return true;
+					}
+					break;
+				}
+				tSQ += dir;
+				piece = gameBoard.pieces[tSQ];
+			}
+		}
+
+		return false;
 	};
 
 	var squareSixtyFour = function( squareOneTwenty ) {
@@ -348,8 +468,7 @@ var chess = function( currentPos, color ){
 	parsePosFEN( currentPos );
 	parseColor( color );
 	printBoard();
-
-
 };
 
-var chessGame = new chess( 'r2rb1k1/pp1q1p1p/2n1p1p1/2bp4/5P2/PP1BPR1Q/1BPN2PP/R5K1', 'black');
+var chessGame = new chess( 'r2rb1k1/pp1q1p1p/2n1p1p1/2bp4/5P2/PP1BPR1Q/1BPN2PP/R5K1', 'black' );
+// new chessGame( );
