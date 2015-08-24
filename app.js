@@ -6,6 +6,8 @@ var chess = function( currentPos, color ){
 
 	// give chess pieces numerical values
 	// define ranks and files
+	// from square to square
+	//
 	var boardSquares = 120,
 		chessPieces = { empty: 0, whitePawn: 1, whitekNight: 2, whiteBishop: 3, whiteRook: 4, whiteQueen: 5, whiteKing: 6,
 					blackPawn: 7, blackkNight: 8, blackBishop: 9, blackRook: 10, blackQueen: 11, blackKing: 12 },
@@ -69,7 +71,45 @@ var chess = function( currentPos, color ){
 	// piece on side
 	//
 	var fileRankSquare = function( file, rank ) {
-		return( ( 21 + file ) + ( rank * 10 ) );
+		return ( 21 + file ) + ( rank * 10 ) ;
+	};
+
+	// var capturedSquare = function( move ) {
+		// return( ( move >> 14) & 0xF );
+	// };
+
+	var fromSquare = function( move ) {
+		return move & 0x27 ;
+	};
+
+	// var promotedSquare = function( move ) {
+		// return( ( move >> 20) & 0xF );
+	// };
+
+	var toSquare = function( move ) {
+		return ( move >> 7) & 0x21;
+
+	};
+
+	var generateMoves = function() {
+		var pieceNum,
+			pieceType,
+			square;
+
+		gameBoard.moveListStart[ gameBoard.ply + 1 ] = gameBoard.moveListStart[ gameBoard.ply ];
+
+		if( gameBoard.side === colors.white ) {
+			pieceType = chessPieces.whitePawn;
+
+
+			pieceType = chessPieces.whitekNight;
+		}
+		else {
+			pieceType = chessPieces.blackPawn;
+
+
+			pieceType = chessPieces.blackkNight;
+		}
 	};
 
 	var generatePositionKey = function() {
@@ -141,6 +181,10 @@ var chess = function( currentPos, color ){
 				sq64++;
 			}
 		}
+	};
+
+	var move = function( from, to ) {
+		return from | to << 7;
 	};
 
 	var parseColor = function( color ) {
@@ -245,7 +289,7 @@ var chess = function( currentPos, color ){
 	};
 
 	var pieceIndex = function( piece, pieceNum ) {
-		return( piece * 10 + pieceNum );
+		return piece * 10 + pieceNum;
 	};
 
 	var printBoard = function() {
@@ -285,7 +329,7 @@ var chess = function( currentPos, color ){
 	};
 
 	var printSquare = function(sq) {
-		return( fileChars[fileBoard[sq]] + ':' + rankChars[rankBoard[sq]] );
+		return fileChars[fileBoard[sq]] + ':' + rankChars[rankBoard[sq]];
 	};
 
 	// generate random numbers
