@@ -59,10 +59,20 @@ var chess = function( currentPos, color ){
 		pieceSlides = [ false, false, false, true, true, true, false, false, false, true, true, true, false ];
 
 	// set up the direction arrays for the pieces that move all fancy like
-	var knightDir = [ -21, -19, -12, -8, 8, 12, 19, 21 ],
-		rookDir = [ -1, -10, 1, 10 ],
+	var dirNum = [ 0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8 ], //array of directions each piece type can move
+		knightDir = [ -21, -19, -12, -8, 8, 12, 19, 21 ],
 		bishDir = [ -11, -9, 9, 11 ],
-		kingDir = [ -11, -10, -9, -1, 1, 9, 10, 11 ];
+		rookDir = [ -1, -10, 1, 10 ],
+		kingDir = [ -11, -10, -9, -1, 1, 9, 10, 11 ],
+		nonSlideIndex = [ 0, 3 ], // white starts at 0, 3
+		nonSlidePieces = [ chessPieces.whitekNight, chessPieces.whiteKing, 0,
+							chessPieces.blackkNight, chessPieces.blackKing, 0 ],
+		pieceDir = [ 0, 0, knightDir, bishDir, rookDir, kingDir, kingDir,
+					 0, knightDir, bishDir, rookDir, kingDir, kingDir ],
+		slidePieceInex = [ chessPieces.whiteBishop, chessPieces.whiteRook, 0,
+							chessPieces.blackBishop, chessPieces.blackRook, chessPieces.blackQueen, 0],
+		slidePieces = [ 0, 4 ];
+
 
 
 	// generate numbers based on file and rank
@@ -92,24 +102,125 @@ var chess = function( currentPos, color ){
 	};
 
 	var generateMoves = function() {
-		var pieceNum,
+		var dir,
+			piece,
+			pieceIndex,
+			pieceNum,
 			pieceType,
-			square;
+			square,
+			tSQ;
 
 		gameBoard.moveListStart[ gameBoard.ply + 1 ] = gameBoard.moveListStart[ gameBoard.ply ];
 
 		if( gameBoard.side === colors.white ) {
 			pieceType = chessPieces.whitePawn;
 
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceType++ ){
+				square = gameBoard.pieceList[ pieceIndex( pieceType, pieceNum ) ];
+
+				if( gameBoard.piece[ square + 10 ] === chessPieces.empty ) {
+					if( rankBoard[square] === ranks.rank2 && gameBoard.pieces[ square + 20 ] === chessPieces.empty ) {
+
+					}
+				}
+
+				if( squareOffBoard( square + 9 ) && pieceColors( gameBoard.pieces[ square + 9 ] === pieceColors.black ) ){
+					// capture move
+				}
+
+				if( squareOffBoard( square + 11 ) && pieceColors( gameBoard.pieces[ square + 11 ] === pieceColors.black ) ){
+					// capture move
+				}
+			}
 
 			pieceType = chessPieces.whitekNight;
 		}
 		else {
 			pieceType = chessPieces.blackPawn;
 
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceType++ ){
+				square = gameBoard.pieceList[ pieceIndex( pieceType, pieceNum ) ];
+
+				if( gameBoard.piece[ square - 10 ] === chessPieces.empty ) {
+					if( rankBoard[square] === ranks.rank2 && gameBoard.pieces[ square - 20 ] === chessPieces.empty ) {
+
+					}
+				}
+
+				if( squareOffBoard( square - 9 ) && pieceColors( gameBoard.pieces[ square - 9 ] === pieceColors.white ) ){
+					// capture move
+				}
+
+				if( squareOffBoard( square - 11 ) && pieceColors( gameBoard.pieces[ square - 11 ] === pieceColors.white ) ){
+					// capture move
+				}
+			}
 
 			pieceType = chessPieces.blackkNight;
 		}
+
+		// get piece for side
+		// generate non sliding moves for knight and king
+		// loop all directions for piece
+
+		pieceIndex = nonSlideIndex[gameBoard.side];
+		piece = nonSlidePieces[ pieceIndex++ ];
+
+		while( piece !== 0 ) {
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[piece]; pieceNum++ ){
+				square = gameBoard.pieceList[ pieceIndex( piece, pieceNum ) ];
+
+				for( var i = 0; i < dirNum[piece]; i++ ) {
+					dir = pieceDir[piece][i];
+					tSQ = square + dir;
+
+					if( squareOffBoard( tSQ ) ) {
+						console.log( 'its off the board bro' );
+						continue;
+					}
+
+					if( gameBoard.pieces[tSQ] !== chessPieces.empty ) {
+						if( pieceColors[ gameBoard.pieces[tSQ] ] !== gameBoard.side ) {
+
+						}
+					}
+					else {
+
+					}
+				}
+			}
+			piece = nonSlidePieces[ pieceIndex ++ ];
+		}
+
+		pieceIndex = slidePieceInex[gameBoard.side];
+		piece = slidePieces[ pieceIndex++ ];
+
+		while( piece !== 0 ) {
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[piece]; pieceNum++ ){
+				square = gameBoard.pieceList[ pieceIndex( piece, pieceNum ) ];
+
+				for( var j = 0; j < dirNum[piece]; j++ ) {
+					dir = pieceDir[piece][j];
+					tSQ = square + dir;
+
+					while ( !squareOffBoard( tSQ ) ) {
+						console.log( 'its off the board bro' );
+
+
+						if( gameBoard.pieces[tSQ] !== chessPieces.empty ) {
+							if( pieceColors[ gameBoard.pieces[tSQ] ] !== gameBoard.side ) {
+
+							}
+							break;
+						}
+
+						tSQ += dir;
+					}
+				}
+			}
+			piece = slidePieces[ pieceIndex ++ ];
+		}
+
 	};
 
 	var generatePositionKey = function() {
@@ -119,7 +230,7 @@ var chess = function( currentPos, color ){
 
 		for( sq; sq < boardSquares; sq++ ) {
 			piece = gameBoard.pieces[sq];
-			if( piece != chessPieces.empty && piece != keySquares.offBoard ) {
+			if( piece !== chessPieces.empty && piece !== keySquares.offBoard ) {
 				finalKey ^= pieceKeys[ ( piece * 120 ) + sq ];
 			}
 		}
@@ -404,7 +515,7 @@ var chess = function( currentPos, color ){
 		for( i = 0; i < knightDir.length; i++ ) {
 			piece = gameBoard.pieces[ square + knightDir[i] ];
 
-			if( piece != keySquares.offBoard && pieceColors[piece] === side && piecekNight[piece] ) {
+			if( piece !== keySquares.offBoard && pieceColors[piece] === side && piecekNight[piece] ) {
 				return true;
 			}
 		}
@@ -413,7 +524,7 @@ var chess = function( currentPos, color ){
 		for( i = 0; i < kingDir.length; i++ ) {
 			piece = gameBoard.pieces[ square + kingDir[i] ];
 
-			if( piece != keySquares.offBoard && pieceColors[piece] === side && pieceKing[piece] ) {
+			if( piece !== keySquares.offBoard && pieceColors[piece] === side && pieceKing[piece] ) {
 				return true;
 			}
 		}
@@ -424,8 +535,8 @@ var chess = function( currentPos, color ){
 			tSQ = square + dir;
 			piece = gameBoard.pieces[tSQ];
 
-			while( piece != keySquares.offBoard ) {
-				if( piece != chessPieces.empty ) {
+			while( piece !== keySquares.offBoard ) {
+				if( piece !== chessPieces.empty ) {
 					if( pieceRookandQueen && pieceColors === side ) {
 						return true;
 					}
@@ -442,8 +553,8 @@ var chess = function( currentPos, color ){
 			tSQ = square + dir;
 			piece = gameBoard.pieces[tSQ];
 
-			while( piece != keySquares.offBoard ) {
-				if( piece != chessPieces.empty ) {
+			while( piece !== keySquares.offBoard ) {
+				if( piece !== chessPieces.empty ) {
 					if( pieceBishandQueen && pieceColors === side ) {
 						return true;
 					}
@@ -452,6 +563,14 @@ var chess = function( currentPos, color ){
 				tSQ += dir;
 				piece = gameBoard.pieces[tSQ];
 			}
+		}
+
+		return false;
+	};
+
+	var squareOffBoard = function( square ) {
+		if( fileBoard[square] === chessPieces.offBoard ){
+			return true;
 		}
 
 		return false;
@@ -495,7 +614,7 @@ var chess = function( currentPos, color ){
 			square = squareOneTwenty(i);
 			piece = gameBoard.pieces[square];
 
-			if( piece != chessPieces.empty ) {
+			if( piece !== chessPieces.empty ) {
 				console.log('MATERIAL!! piece ' + piece + ' is on square ' + square);
 				pieceColor = colors[ piece ];
 
