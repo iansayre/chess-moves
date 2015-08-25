@@ -1,4 +1,3 @@
-'use strict';
 
 // @PARAMS current board configuration and which player's turn it is
 // @RETURN a list of all moves the current player can make
@@ -73,7 +72,61 @@ var chess = function( currentPos, color ){
 							chessPieces.blackBishop, chessPieces.blackRook, chessPieces.blackQueen, 0],
 		slidePieces = [ 0, 4 ];
 
+	var addCaptureMove = function( move ) {
+		gameBoard.moveList[ gameBoard.moveListStart[ gameBoard.ply + 1 ] ] = move;
+	};
 
+	var addMove = function( move ) {
+		gameBoard.moveList[ gameBoard.moveListStart[ gameBoard.ply + 1 ] ] = move;
+	};
+
+	var addWhitePawnCapMove = function( from, to, cap ) {
+		if( rankBoard[from] === ranks.rank7 ){
+			addCaptureMove( move( from, to, cap, chessPieces.whiteQueen ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteRook ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteBishop ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whitekNight ) );
+		}
+		else {
+			addCaptureMove( move( from, to, cap, chessPieces.empty ) );
+		}
+	};
+
+	var addWhitePawnMove = function( from, to ) {
+		if( rankBoard[from] === ranks.rank7 ){
+			addCaptureMove( move( from, to, cap, chessPieces.whiteQueen ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteRook ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteBishop ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whitekNight ) );
+		}
+		else {
+			addCaptureMove( move( from, to, cap, chessPieces.empty ) );
+		}
+	};
+
+	var addBlackPawnCapMove = function( from, to, cap ) {
+		if( rankBoard[from] === ranks.rank7 ){
+			addCaptureMove( move( from, to, cap, chessPieces.blackQueen ) );
+			addCaptureMove( move( from, to, cap, chessPieces.blackRook ) );
+			addCaptureMove( move( from, to, cap, chessPieces.blackBishop ) );
+			addCaptureMove( move( from, to, cap, chessPieces.blackkNight ) );
+		}
+		else {
+			addMove( move( from, to, chessPieces.empty, chessPieces.empty ) );
+		}
+	};
+
+	var addBlackPawnMove = function( from, to ) {
+		if( rankBoard[from] === ranks.rank7 ){
+			addCaptureMove( move( from, to, cap, chessPieces.whiteQueen ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteRook ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whiteBishop ) );
+			addCaptureMove( move( from, to, cap, chessPieces.whitekNight ) );
+		}
+		else {
+			addMove( move( from, to, chessPieces.empty, chessPieces.empty ) );
+		}
+	};
 
 	// generate numbers based on file and rank
 	// piece on square
@@ -108,28 +161,31 @@ var chess = function( currentPos, color ){
 			pieceNum,
 			pieceType,
 			square,
-			tSQ;
+			toSQ;
 
 		gameBoard.moveListStart[ gameBoard.ply + 1 ] = gameBoard.moveListStart[ gameBoard.ply ];
 
 		if( gameBoard.side === colors.white ) {
 			pieceType = chessPieces.whitePawn;
 
-			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceType++ ){
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceNum++ ){
 				square = gameBoard.pieceList[ pieceIndex( pieceType, pieceNum ) ];
 
-				if( gameBoard.piece[ square + 10 ] === chessPieces.empty ) {
+				addWhitePawnMove( sqare, square + 10 );
+				if( gameBoard.pieces[ square + 10 ] === chessPieces.empty ) {
 					if( rankBoard[square] === ranks.rank2 && gameBoard.pieces[ square + 20 ] === chessPieces.empty ) {
-
+						addMove( move( square, square + 20 ) );
 					}
 				}
 
 				if( squareOffBoard( square + 9 ) && pieceColors( gameBoard.pieces[ square + 9 ] === pieceColors.black ) ){
-					// capture move
+					var plus9 = square + 9;
+					addWhitePawnCapMove( square, plus9, gameBoard.pieces[plus9] );
 				}
 
 				if( squareOffBoard( square + 11 ) && pieceColors( gameBoard.pieces[ square + 11 ] === pieceColors.black ) ){
-					// capture move
+					var plus11 = square + 11;
+					addWhitePawnCapMove( square, plus11, gameBoard.pieces[plus11] );
 				}
 			}
 
@@ -138,21 +194,23 @@ var chess = function( currentPos, color ){
 		else {
 			pieceType = chessPieces.blackPawn;
 
-			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceType++ ){
+			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[pieceType]; pieceNum++ ){
 				square = gameBoard.pieceList[ pieceIndex( pieceType, pieceNum ) ];
-
-				if( gameBoard.piece[ square - 10 ] === chessPieces.empty ) {
+				addBlackPawnMove( square, square - 10 );
+				if( gameBoard.pieces[ square - 10 ] === chessPieces.empty ) {
 					if( rankBoard[square] === ranks.rank2 && gameBoard.pieces[ square - 20 ] === chessPieces.empty ) {
-
+						addMove( move( square, square - 20) );
 					}
 				}
 
 				if( squareOffBoard( square - 9 ) && pieceColors( gameBoard.pieces[ square - 9 ] === pieceColors.white ) ){
-					// capture move
+					var minus9 = square - 9;
+					addWhitePawnCapMove( square, minus9, gameBoard.pieces[minus9] );
 				}
 
 				if( squareOffBoard( square - 11 ) && pieceColors( gameBoard.pieces[ square - 11 ] === pieceColors.white ) ){
-					// capture move
+					var minus11 = square - 11;
+					addWhitePawnCapMove( square, minus11, gameBoard.pieces[minus11] );
 				}
 			}
 
@@ -172,20 +230,20 @@ var chess = function( currentPos, color ){
 
 				for( var i = 0; i < dirNum[piece]; i++ ) {
 					dir = pieceDir[piece][i];
-					tSQ = square + dir;
+					toSQ = square + dir;
 
-					if( squareOffBoard( tSQ ) ) {
+					if( squareOffBoard( toSQ ) ) {
 						console.log( 'its off the board bro' );
 						continue;
 					}
 
-					if( gameBoard.pieces[tSQ] !== chessPieces.empty ) {
-						if( pieceColors[ gameBoard.pieces[tSQ] ] !== gameBoard.side ) {
-
+					if( gameBoard.pieces[toSQ] !== chessPieces.empty ) {
+						if( pieceColors[ gameBoard.pieces[toSQ] ] !== gameBoard.side ) {
+							addCaptureMove( move( square, toSQ, chessPieces.empty, chessPieces.empty ) );
 						}
 					}
 					else {
-
+						addeMove( move( square, toSQ ) );
 					}
 				}
 			}
@@ -201,20 +259,20 @@ var chess = function( currentPos, color ){
 
 				for( var j = 0; j < dirNum[piece]; j++ ) {
 					dir = pieceDir[piece][j];
-					tSQ = square + dir;
+					toSQ = square + dir;
 
-					while ( !squareOffBoard( tSQ ) ) {
+					while ( !squareOffBoard( toSQ ) ) {
 						console.log( 'its off the board bro' );
 
 
-						if( gameBoard.pieces[tSQ] !== chessPieces.empty ) {
-							if( pieceColors[ gameBoard.pieces[tSQ] ] !== gameBoard.side ) {
-
+						if( gameBoard.pieces[toSQ] !== chessPieces.empty ) {
+							if( pieceColors[ gameBoard.pieces[toSQ] ] !== gameBoard.side ) {
+								addeMove( move( square, toSQ, chessPieces.empty, chessPieces.empty ) );
 							}
 							break;
 						}
 
-						tSQ += dir;
+						toSQ += dir;
 					}
 				}
 			}
@@ -294,8 +352,8 @@ var chess = function( currentPos, color ){
 		}
 	};
 
-	var move = function( from, to ) {
-		return from | to << 7;
+	var move = function( from, to, capPiece, promoPiece ) {
+		return from | to << 7 | capPiece << 14 | promoPiece << 20;
 	};
 
 	var parseColor = function( color ) {
@@ -434,7 +492,7 @@ var chess = function( currentPos, color ){
 			pieceNum;
 		for( piece = chessPieces.whitePawn; piece <= chessPieces.blackKing; piece++ ) {
 			for( pieceNum = 0; pieceNum < gameBoard.pieceNum[piece]; pieceNum++ ) {
-				console.log( pieceChars[piece] + ' is on ' + printSquare( gameBoard.pieceList[pieceIndex( piece, pieceNum )] ) )
+				console.log( pieceChars[piece] + ' is on ' + printSquare( gameBoard.pieceList[pieceIndex( piece, pieceNum )] ) );
 			}
 		}
 	};
@@ -497,7 +555,7 @@ var chess = function( currentPos, color ){
 		var dir,
 			i,
 			piece,
-			tSQ;
+			toSQ;
 
 		// check for pawn movement
 		if( side === colors.white ) {
@@ -532,8 +590,8 @@ var chess = function( currentPos, color ){
 		// check for rook movement
 		for( i = 0; i < rookDir.length; i++ ) {
 			dir = rookDir[i];
-			tSQ = square + dir;
-			piece = gameBoard.pieces[tSQ];
+			toSQ = square + dir;
+			piece = gameBoard.pieces[toSQ];
 
 			while( piece !== keySquares.offBoard ) {
 				if( piece !== chessPieces.empty ) {
@@ -542,16 +600,16 @@ var chess = function( currentPos, color ){
 					}
 					break;
 				}
-				tSQ += dir;
-				piece = gameBoard.pieces[tSQ];
+				toSQ += dir;
+				piece = gameBoard.pieces[toSQ];
 			}
 		}
 
 		// check for bishop movement
 		for( i = 0; i < bishDir.length; i++ ) {
 			dir = bishDir[i];
-			tSQ = square + dir;
-			piece = gameBoard.pieces[tSQ];
+			toSQ = square + dir;
+			piece = gameBoard.pieces[toSQ];
 
 			while( piece !== keySquares.offBoard ) {
 				if( piece !== chessPieces.empty ) {
@@ -560,8 +618,8 @@ var chess = function( currentPos, color ){
 					}
 					break;
 				}
-				tSQ += dir;
-				piece = gameBoard.pieces[tSQ];
+				toSQ += dir;
+				piece = gameBoard.pieces[toSQ];
 			}
 		}
 
